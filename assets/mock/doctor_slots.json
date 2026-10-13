@@ -1,0 +1,80 @@
+{
+  "monthLabel": "Octobre 2024",
+  "days": [
+    {
+      "date": "2024-10-23",
+      "weekday": "Lun",
+      "day": 23,
+      "morning": [
+        { "time": "09:30", "available": true },
+        { "time": "10:15", "available": false },
+        { "time": "11:00", "available": true }
+      ],
+      "afternoon": [
+        { "time": "14:30", "available": true },
+        { "time": "15:15", "available": true },
+        { "time": "16:00", "available": false }
+      ]
+    },
+    {
+      "date": "2024-10-24",
+      "weekday": "Mar",
+      "day": 24,
+      "morning": [
+        { "time": "09:30", "available": true },
+        { "time": "10:15", "available": true },
+        { "time": "11:00", "available": true }
+      ],
+      "afternoon": [
+        { "time": "14:30", "available": true },
+        { "time": "15:15", "available": true },
+        { "time": "16:00", "available": true }
+      ]
+    },
+    {
+      "date": "2024-10-25",
+      "weekday": "Mer",
+      "day": 25,
+      "morning": [
+        { "time": "09:30", "available": false },
+        { "time": "10:15", "available": true },
+        { "time": "11:00", "available": true }
+      ],
+      "afternoon": [
+        { "time": "14:30", "available": true },
+        { "time": "15:15", "available": false },
+        { "time": "16:00", "available": true }
+      ]
+    },
+    {
+      "date": "2024-10-26",
+      "weekday": "Jeu",
+      "day": 26,
+      "morning": [
+        { "time": "09:30", "available": true },
+        { "time": "10:15", "available": true },
+        { "time": "11:00", "available": false }
+      ],
+      "afternoon": [
+        { "time": "14:30", "available": true },
+        { "time": "15:15", "available": true },
+        { "time": "16:00", "available": true }
+      ]
+    },
+    {
+      "date": "2024-10-27",
+      "weekday": "Ven",
+      "day": 27,
+      "morning": [
+        { "time": "09:30", "available": true },
+        { "time": "10:15", "available": true },
+        { "time": "11:00", "available": true }
+      ],
+      "afternoon": [
+        { "time": "14:30", "available": false },
+        { "time": "15:15", "available": true },
+        { "time": "16:00", "available": true }
+      ]
+    }
+  ]
+}

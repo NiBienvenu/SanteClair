@@ -1,0 +1,25 @@
+{
+  "id": "pat_001",
+  "firstName": "Amina",
+  "lastName": "Koné",
+  "email": "amina.kone@email.com",
+  "phone": "07 00 12 34 56",
+  "verified": true,
+  "dataHosting": "Conforme HDS",
+  "consentStatus": "Validé 2025",
+  "birthDate": "1992-05-14",
+  "socialSecurityNumber": "1 92 05 75 112 045",
+  "emergencyContact": {
+    "name": "Moussa Koné",
+    "relation": "Frère",
+    "phone": "07 08 03 15 67"
+  },
+  "settings": {
+    "paymentMethodsSummary": "Wave, Orange Money enregistrés",
+    "notificationsSummary": "Consultations et renouvellements",
+    "notificationsEnabled": true,
+    "securitySummary": "Double authentification activée",
+    "sharingSummary": "Accès autorisés pour 3 médecins",
+    "helpSummary": "FAQ, contact support santé"
+  }
+}

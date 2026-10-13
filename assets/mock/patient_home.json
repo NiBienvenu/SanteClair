@@ -1,0 +1,10 @@
+{
+  "subtitle": "Prête pour vos soins du jour",
+  "quickConsultations": [
+    { "id": "generaliste", "label": "Généraliste", "icon": "stethoscope" },
+    { "id": "dentiste", "label": "Dentiste", "icon": "tooth" },
+    { "id": "pediatre", "label": "Pédiatre", "icon": "child" },
+    { "id": "video", "label": "Vidéo", "icon": "video" }
+  ],
+  "recentDoctorIds": ["doc_002", "doc_003"]
+}

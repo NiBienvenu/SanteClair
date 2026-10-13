@@ -1,0 +1,60 @@
+[
+  {
+    "id": "apt_001",
+    "patientId": "pat_001",
+    "patientName": "Amina Koné",
+    "doctor": {
+      "id": "doc_001",
+      "firstName": "Sarah",
+      "lastName": "Joubert",
+      "specialty": "Médecin généraliste",
+      "specialtyKey": "generaliste",
+      "fee": 15000,
+      "currency": "FBU",
+      "verified": true,
+      "teleconsultation": true,
+      "address": "Cabinet Saint-Germain, Paris",
+      "cabinetName": "Cabinet médical central",
+      "phone": "01 45 22 10 10"
+    },
+    "date": "2024-10-24",
+    "time": "10:15",
+    "mode": "cabinet",
+    "location": "Cabinet médical central",
+    "reason": "Consultation classique",
+    "status": "confirmed",
+    "amount": 15000,
+    "currency": "FBU",
+    "paymentMethod": "wave",
+    "receiptName": "recu_wave_15000.jpg"
+  },
+  {
+    "id": "apt_002",
+    "patientId": "pat_001",
+    "patientName": "Amina Koné",
+    "doctor": {
+      "id": "doc_002",
+      "firstName": "Alexandre",
+      "lastName": "Mercier",
+      "specialty": "Cardiologue",
+      "specialtyKey": "cardiologue",
+      "fee": 25000,
+      "currency": "FBU",
+      "verified": true,
+      "teleconsultation": true,
+      "address": "Clinique du Cœur, Lyon",
+      "cabinetName": "Clinique du Cœur",
+      "phone": "04 72 00 11 22"
+    },
+    "date": "2024-08-16",
+    "time": "15:15",
+    "mode": "video",
+    "location": "Téléconsultation",
+    "reason": "Renouvellement",
+    "status": "completed",
+    "amount": 25000,
+    "currency": "FBU",
+    "paymentMethod": "orange_money",
+    "receiptName": "recu_om_25000.jpg"
+  }
+]

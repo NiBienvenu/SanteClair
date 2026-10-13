@@ -1,0 +1,5 @@
+[
+  { "id": "wave", "label": "Wave", "account": "+225 07 00 12 34 56", "icon": "wallet" },
+  { "id": "orange_money", "label": "Orange Money", "account": null, "icon": "money" },
+  { "id": "moov_money", "label": "Moov Money", "account": null, "icon": "phone" }
+]

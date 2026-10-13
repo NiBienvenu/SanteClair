@@ -1,0 +1,28 @@
+{
+  "specialties": [
+    "Médecine générale",
+    "Cardiologie",
+    "Pédiatrie",
+    "Dentiste",
+    "Gynécologie",
+    "Dermatologie"
+  ],
+  "bloodGroups": ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
+  "consultationReasons": [
+    { "id": "classic", "label": "Consultation classique", "icon": "clipboard" },
+    { "id": "first_visit", "label": "Première visite", "icon": "person_add" },
+    { "id": "renewal", "label": "Renouvellement", "icon": "refresh" },
+    { "id": "emergency", "label": "Urgence", "icon": "emergency" }
+  ],
+  "consultationModes": [
+    { "id": "cabinet", "label": "Au cabinet", "subtitle": "En présentiel", "icon": "hospital" },
+    { "id": "video", "label": "En vidéo", "subtitle": "Téléconsultation", "icon": "video" }
+  ],
+  "weekDays": ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"],
+  "slotDurations": [15, 30, 45, 60],
+  "availabilityLocations": [
+    { "id": "cabinet", "label": "Au cabinet", "subtitle": "Consultation présentielle standard", "icon": "hospital" },
+    { "id": "video", "label": "Téléconsultation vidéo", "subtitle": "Lien sécurisé certifié santé", "icon": "video" },
+    { "id": "both", "label": "Les deux", "subtitle": "Mixte selon le motif sélectionné", "icon": "swap" }
+  ]
+}

@@ -1,0 +1,32 @@
+[
+  {
+    "password": "Sante@2024",
+    "user": {
+      "id": "pat_001",
+      "role": "patient",
+      "firstName": "Amina",
+      "lastName": "Koné",
+      "email": "amina.kone@email.com",
+      "phone": "07 00 12 34 56",
+      "bloodGroup": "O+",
+      "verified": true,
+      "biometricEnabled": true,
+      "accountStatus": "active"
+    }
+  },
+  {
+    "password": "Sante@2024",
+    "user": {
+      "id": "doc_004",
+      "role": "doctor",
+      "firstName": "Marc",
+      "lastName": "Joubert",
+      "email": "dr.joubert@cabinet.fr",
+      "phone": "01 42 68 00 00",
+      "specialty": "Médecin généraliste",
+      "verified": true,
+      "biometricEnabled": true,
+      "accountStatus": "active"
+    }
+  }
+]

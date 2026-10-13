@@ -1,0 +1,46 @@
+{
+  "patientId": "pat_001",
+  "updatedAt": "2024-10-24",
+  "bloodGroup": "O+",
+  "allergies": ["Pénicilline"],
+  "activeTreatments": 1,
+  "records": [
+    {
+      "id": "rec_001",
+      "type": "prescription",
+      "title": "Ordonnance • Dr. Joubert",
+      "date": "2024-10-24",
+      "details": "Salbutamol 100µg, Paracétamol 1g",
+      "fileName": "ordonnance_24102024.pdf"
+    },
+    {
+      "id": "rec_002",
+      "type": "lab",
+      "title": "Bilan sanguin • BioMed",
+      "date": "2024-09-15",
+      "details": "NFS, glycémie, bilan lipidique",
+      "fileName": "bilan_sanguin_biomed.pdf"
+    }
+  ],
+  "consultations": [
+    {
+      "id": "cons_001",
+      "title": "Consultation classique",
+      "doctor": "Dr. Sarah Joubert",
+      "place": "Cabinet",
+      "date": "2024-10-24",
+      "status": "Terminé"
+    },
+    {
+      "id": "cons_002",
+      "title": "Téléconsultation",
+      "doctor": "Dr. Alexandre Mercier",
+      "place": "Cardiologue",
+      "date": "2024-08-16",
+      "status": "Terminé"
+    }
+  ],
+  "documents": [],
+  "acceptedFormats": ["PDF", "JPG", "PNG", "DICOM"],
+  "maxSizeMb": 25
+}
