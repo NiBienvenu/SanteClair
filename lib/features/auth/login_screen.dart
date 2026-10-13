@@ -220,18 +220,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                       ],
                     ),
-                    if (AppConfig.useMock) ...[
-                      const SizedBox(height: 16),
-                      InkWell(
-                        onTap: _fillDemo,
-                        child: InfoBanner(
-                          icon: Icons.science_outlined,
-                          title: 'Mode démo (données mock)',
-                          text:
-                              'Touchez ici pour pré-remplir : ${_role == UserRole.doctor ? AppConfig.demoDoctorEmail : AppConfig.demoPatientEmail} / ${AppConfig.demoPassword}',
-                        ),
-                      ),
-                    ],
+                    // if (AppConfig.useMock) ...[
+                    //   const SizedBox(height: 16),
+                    //   InkWell(
+                    //     onTap: _fillDemo,
+                    //     child: InfoBanner(
+                    //       icon: Icons.science_outlined,
+                    //       title: 'Mode démo (données mock)',
+                    //       text:
+                    //           'Touchez ici pour pré-remplir : ${_role == UserRole.doctor ? AppConfig.demoDoctorEmail : AppConfig.demoPatientEmail} / ${AppConfig.demoPassword}',
+                    //     ),
+                    //   ),
+                    // ],
                   ],
                 ),
               ),
