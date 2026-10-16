@@ -1,5 +1,6 @@
 class ApiEndpoints {
   static const login = '/auth/login';
+  static const refresh = '/auth/refresh';
   static const biometricLogin = '/auth/biometric';
   static const forgotPassword = '/auth/forgot-password';
   static const registerPatient = '/auth/register/patient';

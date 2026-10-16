@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/config/app_config.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/validators.dart';
@@ -70,7 +69,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Saisissez votre e-mail ou téléphone pour recevoir un lien de réinitialisation.'),
+            const Text(
+              'Saisissez votre e-mail ou téléphone pour recevoir un lien de réinitialisation.',
+            ),
             const SizedBox(height: 12),
             TextField(
               controller: controller,
@@ -79,7 +80,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annuler'),
+          ),
           FilledButton(
             style: FilledButton.styleFrom(minimumSize: const Size(80, 40)),
             onPressed: () => Navigator.pop(context, controller.text.trim()),
@@ -91,17 +95,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     controller.dispose();
     if (identifier == null || identifier.isEmpty || !mounted) return;
     try {
-      final message = await ref.read(authRepositoryProvider).forgotPassword(identifier);
+      final message = await ref
+          .read(authRepositoryProvider)
+          .forgotPassword(identifier);
       if (mounted) showAppSnack(context, message);
     } on ApiException catch (e) {
       if (mounted) showAppSnack(context, e.message, error: true);
     }
-  }
-
-  void _fillDemo() {
-    _identifier.text =
-        _role == UserRole.doctor ? AppConfig.demoDoctorEmail : AppConfig.demoPatientEmail;
-    _password.text = AppConfig.demoPassword;
   }
 
   @override
@@ -124,7 +124,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     const Text(
                       'SantéClair',
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     const Text(
@@ -136,19 +139,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     SegmentedSwitch(
                       items: const [
                         SegmentItem('Patient', icon: Icons.person_outline),
-                        SegmentItem('Médecin', icon: Icons.medical_services_outlined),
+                        SegmentItem(
+                          'Médecin',
+                          icon: Icons.medical_services_outlined,
+                        ),
                       ],
                       selectedIndex: _role.index,
-                      onChanged: (i) => setState(() => _role = UserRole.values[i]),
+                      onChanged: (i) =>
+                          setState(() => _role = UserRole.values[i]),
                     ),
                     const SizedBox(height: 12),
                     SegmentedSwitch(
-                      items: const [SegmentItem('Connexion'), SegmentItem('Créer un compte')],
+                      items: const [
+                        SegmentItem('Connexion'),
+                        SegmentItem('Créer un compte'),
+                      ],
                       selectedIndex: 0,
                       onChanged: (i) {
                         if (i == 1) {
                           context.push(
-                            _role == UserRole.doctor ? Routes.registerDoctor : Routes.registerPatient,
+                            _role == UserRole.doctor
+                                ? Routes.registerDoctor
+                                : Routes.registerPatient,
                           );
                         }
                       },
@@ -163,7 +175,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     PasswordField(
                       controller: _password,
-                      validator: (v) => Validators.required(v, 'Mot de passe obligatoire'),
+                      validator: (v) =>
+                          Validators.required(v, 'Mot de passe obligatoire'),
                       onSubmitted: _submit,
                       labelTrailing: GestureDetector(
                         onTap: _forgotPassword,
@@ -193,7 +206,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                     ),
                     OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size.fromHeight(50),
+                      ),
                       onPressed: _biometricLoading ? null : _biometric,
                       icon: _biometricLoading
                           ? const SizedBox(
@@ -208,7 +223,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.verified_user, size: 16, color: AppColors.success),
+                        Icon(
+                          Icons.verified_user,
+                          size: 16,
+                          color: AppColors.success,
+                        ),
                         SizedBox(width: 6),
                         Text(
                           'Données de santé protégées HDS',

@@ -25,10 +25,23 @@ class DoctorProfileScreen extends ConsumerWidget {
           SectionCard(
             child: Column(
               children: [
-                InitialsAvatar(initials: user.initials, size: 72, verified: user.verified),
+                InitialsAvatar(
+                  initials: user.initials,
+                  size: 72,
+                  verified: user.verified,
+                ),
                 const SizedBox(height: 10),
-                Text(user.displayName, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
-                Text(user.specialty ?? '', style: const TextStyle(color: AppColors.textSecondary)),
+                Text(
+                  user.displayName,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                Text(
+                  user.specialty ?? '',
+                  style: const TextStyle(color: AppColors.textSecondary),
+                ),
                 const SizedBox(height: 6),
                 if (user.verified)
                   const StatusBadge(
@@ -46,23 +59,35 @@ class DoctorProfileScreen extends ConsumerWidget {
             child: Column(
               children: [
                 ListTile(
-                  leading: const Icon(Icons.email_outlined, color: AppColors.primary),
+                  leading: const Icon(
+                    Icons.email_outlined,
+                    color: AppColors.primary,
+                  ),
                   title: const Text('E-mail professionnel'),
                   subtitle: Text(user.email),
                 ),
                 ListTile(
-                  leading: const Icon(Icons.phone_outlined, color: AppColors.primary),
+                  leading: const Icon(
+                    Icons.phone_outlined,
+                    color: AppColors.primary,
+                  ),
                   title: const Text('Téléphone professionnel'),
                   subtitle: Text(user.phone),
                 ),
                 if (doctor != null) ...[
                   ListTile(
-                    leading: const Icon(Icons.location_on_outlined, color: AppColors.primary),
+                    leading: const Icon(
+                      Icons.location_on_outlined,
+                      color: AppColors.primary,
+                    ),
                     title: const Text('Cabinet'),
                     subtitle: Text(doctor.address),
                   ),
                   ListTile(
-                    leading: const Icon(Icons.payments_outlined, color: AppColors.primary),
+                    leading: const Icon(
+                      Icons.payments_outlined,
+                      color: AppColors.primary,
+                    ),
                     title: const Text('Tarif consultation standard'),
                     subtitle: Text(formatMoney(doctor.fee, doctor.currency)),
                   ),
@@ -75,7 +100,7 @@ class DoctorProfileScreen extends ConsumerWidget {
           const SizedBox(height: 12),
           const Center(
             child: Text(
-              '${AppConfig.appVersion} • Certifié HDS & RGPD Santé',
+              AppConfig.appVersion,
               style: TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
             ),
           ),

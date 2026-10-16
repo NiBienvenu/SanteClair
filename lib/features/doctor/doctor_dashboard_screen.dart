@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/utils/download_file.dart';
 import '../../core/widgets/app_bars.dart';
 import '../../core/widgets/common.dart';
 import '../../core/widgets/segmented_switch.dart';
@@ -18,7 +21,8 @@ class DoctorDashboardScreen extends ConsumerStatefulWidget {
   const DoctorDashboardScreen({super.key});
 
   @override
-  ConsumerState<DoctorDashboardScreen> createState() => _DoctorDashboardScreenState();
+  ConsumerState<DoctorDashboardScreen> createState() =>
+      _DoctorDashboardScreenState();
 }
 
 class _DoctorDashboardScreenState extends ConsumerState<DoctorDashboardScreen> {
@@ -27,7 +31,11 @@ class _DoctorDashboardScreenState extends ConsumerState<DoctorDashboardScreen> {
 
   DoctorRepository get _repo => ref.read(doctorRepositoryProvider);
 
-  Future<void> _run(String id, Future<void> Function() action, {String? success}) async {
+  Future<void> _run(
+    String id,
+    Future<void> Function() action, {
+    String? success,
+  }) async {
     setState(() => _busy.add(id));
     try {
       await action();
@@ -41,7 +49,10 @@ class _DoctorDashboardScreenState extends ConsumerState<DoctorDashboardScreen> {
     }
   }
 
-  Future<void> _changeStatus(DoctorAvailabilityStatus status, DoctorAvailabilityStatus previous) async {
+  Future<void> _changeStatus(
+    DoctorAvailabilityStatus status,
+    DoctorAvailabilityStatus previous,
+  ) async {
     setState(() => _status = status);
     try {
       await _repo.updateStatus(status);
@@ -72,7 +83,10 @@ class _DoctorDashboardScreenState extends ConsumerState<DoctorDashboardScreen> {
                 const SizedBox(height: 12),
                 SegmentedSwitch(
                   filledSelection: true,
-                  items: [for (final s in DoctorAvailabilityStatus.values) SegmentItem(s.label)],
+                  items: [
+                    for (final s in DoctorAvailabilityStatus.values)
+                      SegmentItem(s.label),
+                  ],
                   selectedIndex: status.index,
                   onChanged: (i) {
                     final next = DoctorAvailabilityStatus.values[i];
@@ -84,15 +98,27 @@ class _DoctorDashboardScreenState extends ConsumerState<DoctorDashboardScreen> {
                   children: [
                     _StatCard(value: d.stats.today, label: 'RDV aujourd\'hui'),
                     const SizedBox(width: 8),
-                    _StatCard(value: d.stats.toConfirm, label: 'à confirmer', color: AppColors.danger),
+                    _StatCard(
+                      value: d.stats.toConfirm,
+                      label: 'à confirmer',
+                      color: AppColors.danger,
+                    ),
                     const SizedBox(width: 8),
-                    _StatCard(value: d.stats.teleconsultations, label: 'Téléconsultation'),
+                    _StatCard(
+                      value: d.stats.teleconsultations,
+                      label: 'Téléconsultation',
+                    ),
                   ],
                 ),
                 SectionTitle(
                   'Planning du jour',
-                  trailing: Text(formatDayLong(d.date),
-                      style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                  trailing: Text(
+                    formatDayLong(d.date),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
                 ),
                 for (final item in d.schedule) _scheduleTile(item),
                 SectionTitle(
@@ -100,13 +126,17 @@ class _DoctorDashboardScreenState extends ConsumerState<DoctorDashboardScreen> {
                   trailing: d.pendingPayments.isEmpty
                       ? null
                       : StatusBadge(
-                          label: '${d.pendingPayments.length} reçu${d.pendingPayments.length > 1 ? 's' : ''}',
+                          label:
+                              '${d.pendingPayments.length} reçu${d.pendingPayments.length > 1 ? 's' : ''}',
                           color: AppColors.primary,
                           background: AppColors.surfaceTint,
                         ),
                 ),
                 if (d.pendingPayments.isEmpty)
-                  const InfoBanner(icon: Icons.task_alt, text: 'Tous les paiements ont été vérifiés.')
+                  const InfoBanner(
+                    icon: Icons.task_alt,
+                    text: 'Tous les paiements ont été vérifiés.',
+                  )
                 else
                   for (final p in d.pendingPayments) _paymentCard(p),
                 const SizedBox(height: 18),
@@ -125,24 +155,51 @@ class _DoctorDashboardScreenState extends ConsumerState<DoctorDashboardScreen> {
 
   Widget _header(DoctorDashboard d, DoctorAvailabilityStatus status) {
     final (color, bg) = switch (status) {
-      DoctorAvailabilityStatus.available => (AppColors.success, AppColors.successSoft),
-      DoctorAvailabilityStatus.inConsultation => (AppColors.primary, AppColors.surfaceTint),
-      DoctorAvailabilityStatus.onBreak => (AppColors.warning, AppColors.warningSoft),
+      DoctorAvailabilityStatus.available => (
+        AppColors.success,
+        AppColors.successSoft,
+      ),
+      DoctorAvailabilityStatus.inConsultation => (
+        AppColors.primary,
+        AppColors.surfaceTint,
+      ),
+      DoctorAvailabilityStatus.onBreak => (
+        AppColors.warning,
+        AppColors.warningSoft,
+      ),
     };
     return Row(
       children: [
-        InitialsAvatar(initials: d.doctor.initials, size: 52, verified: d.doctor.verified),
+        InitialsAvatar(
+          initials: d.doctor.initials,
+          size: 52,
+          verified: d.doctor.verified,
+        ),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(d.doctor.displayName, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
-              Text(d.doctor.specialty, style: const TextStyle(color: AppColors.textSecondary)),
+              Text(
+                d.doctor.displayName,
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              Text(
+                d.doctor.specialty,
+                style: const TextStyle(color: AppColors.textSecondary),
+              ),
             ],
           ),
         ),
-        StatusBadge(label: status.label.toUpperCase(), icon: Icons.circle, color: color, background: bg),
+        StatusBadge(
+          label: status.label.toUpperCase(),
+          icon: Icons.circle,
+          color: color,
+          background: bg,
+        ),
       ],
     );
   }
@@ -161,16 +218,32 @@ class _DoctorDashboardScreenState extends ConsumerState<DoctorDashboardScreen> {
         child: Row(
           children: [
             Expanded(
-              child: Text(blocked ? 'Créneau bloqué' : 'Créneau libre',
-                  style: const TextStyle(fontStyle: FontStyle.italic, color: AppColors.textSecondary)),
+              child: Text(
+                blocked ? 'Créneau bloqué' : 'Créneau libre',
+                style: const TextStyle(
+                  fontStyle: FontStyle.italic,
+                  color: AppColors.textSecondary,
+                ),
+              ),
             ),
             OutlinedButton.icon(
-              style: OutlinedButton.styleFrom(minimumSize: const Size(0, 34), backgroundColor: AppColors.surfaceTint),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size(0, 34),
+                backgroundColor: AppColors.surfaceTint,
+              ),
               onPressed: busy
                   ? null
-                  : () => _run(item.id,
-                      () => _repo.updateScheduleItem(item.id, blocked ? ScheduleAction.unblock : ScheduleAction.block)),
-              icon: Icon(blocked ? Icons.lock_open : Icons.lock_outline, size: 16),
+                  : () => _run(
+                      item.id,
+                      () => _repo.updateScheduleItem(
+                        item.id,
+                        blocked ? ScheduleAction.unblock : ScheduleAction.block,
+                      ),
+                    ),
+              icon: Icon(
+                blocked ? Icons.lock_open : Icons.lock_outline,
+                size: 16,
+              ),
               label: Text(blocked ? 'Débloquer' : 'Bloquer'),
             ),
           ],
@@ -196,14 +269,29 @@ class _DoctorDashboardScreenState extends ConsumerState<DoctorDashboardScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(patient.name, style: const TextStyle(fontWeight: FontWeight.w700)),
+                    Text(
+                      patient.name,
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
                     Row(
                       children: [
-                        Icon(item.mode == 'video' ? Icons.videocam_outlined : Icons.local_hospital_outlined,
-                            size: 14, color: AppColors.textSecondary),
+                        Icon(
+                          item.mode == 'video'
+                              ? Icons.videocam_outlined
+                              : Icons.local_hospital_outlined,
+                          size: 14,
+                          color: AppColors.textSecondary,
+                        ),
                         const SizedBox(width: 4),
-                        Text(item.mode == 'video' ? 'Téléconsultation' : 'Au cabinet',
-                            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                        Text(
+                          item.mode == 'video'
+                              ? 'Téléconsultation'
+                              : 'Au cabinet',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -217,7 +305,8 @@ class _DoctorDashboardScreenState extends ConsumerState<DoctorDashboardScreen> {
                     minimumSize: const Size(0, 34),
                     backgroundColor: AppColors.surfaceTint,
                   ),
-                  onPressed: () => showPatientFile(context, patient, time: item.time),
+                  onPressed: () =>
+                      showPatientFile(context, patient, time: item.time),
                   icon: const Icon(Icons.folder_open_outlined, size: 16),
                   label: const Text('Dossier'),
                 ),
@@ -230,11 +319,21 @@ class _DoctorDashboardScreenState extends ConsumerState<DoctorDashboardScreen> {
               children: [
                 Expanded(
                   child: FilledButton.icon(
-                    style: small.copyWith(backgroundColor: const WidgetStatePropertyAll(AppColors.success)),
+                    style: small.copyWith(
+                      backgroundColor: const WidgetStatePropertyAll(
+                        AppColors.success,
+                      ),
+                    ),
                     onPressed: busy
                         ? null
-                        : () => _run(item.id, () => _repo.updateScheduleItem(item.id, ScheduleAction.accept),
-                            success: 'Rendez-vous de ${patient.name} accepté.'),
+                        : () => _run(
+                            item.id,
+                            () => _repo.updateScheduleItem(
+                              item.id,
+                              ScheduleAction.accept,
+                            ),
+                            success: 'Rendez-vous de ${patient.name} accepté.',
+                          ),
                     icon: const Icon(Icons.check, size: 16),
                     label: const Text('Accepter'),
                   ),
@@ -265,19 +364,30 @@ class _DoctorDashboardScreenState extends ConsumerState<DoctorDashboardScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Refuser le rendez-vous ?'),
-        content: Text('${item.patient!.name} à ${item.time} sera notifié(e) du refus.'),
+        content: Text(
+          '${item.patient!.name} à ${item.time} sera notifié(e) du refus.',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Annuler'),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Refuser', style: TextStyle(color: AppColors.danger)),
+            child: const Text(
+              'Refuser',
+              style: TextStyle(color: AppColors.danger),
+            ),
           ),
         ],
       ),
     );
     if (ok == true) {
-      await _run(item.id, () => _repo.updateScheduleItem(item.id, ScheduleAction.refuse),
-          success: 'Rendez-vous refusé.');
+      await _run(
+        item.id,
+        () => _repo.updateScheduleItem(item.id, ScheduleAction.refuse),
+        success: 'Rendez-vous refusé.',
+      );
     }
   }
 
@@ -299,7 +409,11 @@ class _DoctorDashboardScreenState extends ConsumerState<DoctorDashboardScreen> {
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: AppColors.border),
                 ),
-                child: const Icon(Icons.receipt_long, color: AppColors.primary, size: 28),
+                child: const Icon(
+                  Icons.receipt_long,
+                  color: AppColors.primary,
+                  size: 28,
+                ),
               ),
             ),
             const SizedBox(width: 12),
@@ -307,17 +421,33 @@ class _DoctorDashboardScreenState extends ConsumerState<DoctorDashboardScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(p.patientName, style: const TextStyle(fontWeight: FontWeight.w700)),
-                  Text(formatMoney(p.amount, p.currency),
-                      style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.primary)),
-                  Text('Via ${p.method} • ${p.time}',
-                      style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                  Text(
+                    p.patientName,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  Text(
+                    formatMoney(p.amount, p.currency),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  Text(
+                    'Via ${p.method} • ${p.time}',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   FilledButton.icon(
                     style: FilledButton.styleFrom(
                       backgroundColor: AppColors.success,
                       minimumSize: const Size.fromHeight(36),
-                      textStyle: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
+                      textStyle: const TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     onPressed: busy
                         ? null
@@ -327,7 +457,13 @@ class _DoctorDashboardScreenState extends ConsumerState<DoctorDashboardScreen> {
                           }),
                     icon: busy
                         ? const SizedBox(
-                            width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
                         : const Icon(Icons.verified_outlined, size: 16),
                     label: const Text('Valider le paiement'),
                   ),
@@ -341,6 +477,13 @@ class _DoctorDashboardScreenState extends ConsumerState<DoctorDashboardScreen> {
   }
 
   void _showReceipt(PendingPayment p) {
+    final imageReceipt = RegExp(
+      r'\.(png|jpe?g)$',
+      caseSensitive: false,
+    ).hasMatch(p.receiptName ?? '');
+    final image = imageReceipt && p.receiptUrl != null
+        ? ref.read(apiClientProvider).getBytes(p.receiptUrl!)
+        : null;
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
@@ -351,23 +494,74 @@ class _DoctorDashboardScreenState extends ConsumerState<DoctorDashboardScreen> {
             Container(
               height: 160,
               width: double.infinity,
-              decoration: BoxDecoration(color: AppColors.surfaceTint, borderRadius: BorderRadius.circular(12)),
-              child: const Icon(Icons.image_outlined, size: 64, color: AppColors.primary),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceTint,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: image == null
+                  ? const Icon(
+                      Icons.description_outlined,
+                      size: 64,
+                      color: AppColors.primary,
+                    )
+                  : FutureBuilder<Uint8List>(
+                      future: image,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasError) {
+                          return const Center(
+                            child: Text('Impossible de charger le reçu.'),
+                          );
+                        }
+                        if (!snapshot.hasData) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                        return Image.memory(
+                          snapshot.data!,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, _, _) =>
+                              const Center(child: Text('Aperçu indisponible.')),
+                        );
+                      },
+                    ),
             ),
             const SizedBox(height: 10),
             Text(p.receiptName ?? 'reçu'),
-            Text('${formatMoney(p.amount, p.currency)} via ${p.method} à ${p.time}',
-                style: const TextStyle(color: AppColors.textSecondary)),
+            Text(
+              '${formatMoney(p.amount, p.currency)} via ${p.method} à ${p.time}',
+              style: const TextStyle(color: AppColors.textSecondary),
+            ),
           ],
         ),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Fermer'))],
+        actions: [
+          if (p.receiptUrl != null)
+            TextButton.icon(
+              onPressed: () => downloadApiFile(
+                context,
+                ref.read(apiClientProvider),
+                url: p.receiptUrl!,
+                fileName: p.receiptName ?? 'recu.pdf',
+              ),
+              icon: const Icon(Icons.download),
+              label: const Text('Télécharger'),
+            ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Fermer'),
+          ),
+        ],
       ),
     );
   }
 }
 
 class _StatCard extends StatelessWidget {
-  const _StatCard({required this.value, required this.label, this.color = AppColors.primary});
+  const _StatCard({
+    required this.value,
+    required this.label,
+    this.color = AppColors.primary,
+  });
 
   final int value;
   final String label;
@@ -380,9 +574,22 @@ class _StatCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
         child: Column(
           children: [
-            Text('$value', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: color)),
-            Text(label, textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+            Text(
+              '$value',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                color: color,
+              ),
+            ),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 11,
+                color: AppColors.textSecondary,
+              ),
+            ),
           ],
         ),
       ),
@@ -407,8 +614,14 @@ class _TileShell extends StatelessWidget {
           children: [
             SizedBox(
               width: 52,
-              child: Text(time,
-                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: AppColors.primary)),
+              child: Text(
+                time,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 15,
+                  color: AppColors.primary,
+                ),
+              ),
             ),
             Expanded(child: child),
           ],

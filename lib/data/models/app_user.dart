@@ -30,7 +30,8 @@ class AppUser {
   final String? bloodGroup;
 
   String get fullName => '$firstName $lastName';
-  String get displayName => role == UserRole.doctor ? 'Dr. $fullName' : fullName;
+  String get displayName =>
+      role == UserRole.doctor ? 'Dr. $fullName' : fullName;
   String get initials =>
       '${firstName.isNotEmpty ? firstName[0] : ''}${lastName.isNotEmpty ? lastName[0] : ''}'
           .toUpperCase();
@@ -61,15 +62,25 @@ class AppUser {
 }
 
 class AuthSession {
-  const AuthSession({required this.token, required this.user});
+  const AuthSession({
+    required this.token,
+    required this.user,
+    this.refreshToken,
+  });
 
   final String token;
+  final String? refreshToken;
   final AppUser user;
 
   factory AuthSession.fromJson(Map<String, dynamic> json) => AuthSession(
     token: json['token'] as String,
+    refreshToken: json['refresh'] as String?,
     user: AppUser.fromJson(json['user'] as Map<String, dynamic>),
   );
 
-  Map<String, dynamic> toJson() => {'token': token, 'user': user.toJson()};
+  Map<String, dynamic> toJson() => {
+    'token': token,
+    'refresh': refreshToken,
+    'user': user.toJson(),
+  };
 }

@@ -19,6 +19,10 @@ final apiClientProvider = Provider<ApiClient>((ref) {
   return ApiClient(
     tokenProvider: () => ref.read(authControllerProvider).session?.token,
     onUnauthorized: () => ref.read(authControllerProvider.notifier).logout(),
+    refreshTokenProvider: () =>
+        ref.read(authControllerProvider).session?.refreshToken,
+    onTokenRefreshed: (token) =>
+        ref.read(authControllerProvider.notifier).refreshAccessToken(token),
   );
 });
 
@@ -27,12 +31,24 @@ final sessionStorageProvider = Provider((_) => SessionStorage());
 final authRepositoryProvider = Provider(
   (ref) => AuthRepository(ref.watch(apiClientProvider)),
 );
-final patientRepositoryProvider = Provider(
-  (ref) => PatientRepository(ref.watch(apiClientProvider)),
-);
-final doctorRepositoryProvider = Provider(
-  (ref) => DoctorRepository(ref.watch(apiClientProvider)),
-);
+// The API client is independent of AuthController. Only repositories that
+// expose account data are recreated when the signed-in account changes.
+final patientRepositoryProvider = Provider((ref) {
+  ref.watch(
+    authControllerProvider.select(
+      (state) => (state.user?.id, state.user?.role),
+    ),
+  );
+  return PatientRepository(ref.watch(apiClientProvider));
+});
+final doctorRepositoryProvider = Provider((ref) {
+  ref.watch(
+    authControllerProvider.select(
+      (state) => (state.user?.id, state.user?.role),
+    ),
+  );
+  return DoctorRepository(ref.watch(apiClientProvider));
+});
 
 // ------------------------------------------------------------------- auth
 
@@ -70,13 +86,43 @@ class AuthController extends Notifier<AuthState> {
   }
 
   Future<void> login(String identifier, String password, UserRole role) async =>
-      _open(await _repo.login(identifier: identifier, password: password, role: role));
+      _open(
+        await _repo.login(
+          identifier: identifier,
+          password: password,
+          role: role,
+        ),
+      );
 
   Future<void> biometricLogin(UserRole role) async =>
       _open(await _repo.biometricLogin(role));
 
   Future<void> registerPatient(PatientSignUp form) async =>
       _open(await _repo.registerPatient(form));
+
+  Future<void> refreshAccessToken(String token) async {
+    final current = state.session;
+    if (current == null) return;
+    await _open(
+      AuthSession(
+        token: token,
+        user: current.user,
+        refreshToken: current.refreshToken,
+      ),
+    );
+  }
+
+  Future<void> updateUser(AppUser user) async {
+    final current = state.session;
+    if (current == null) return;
+    await _open(
+      AuthSession(
+        token: current.token,
+        user: user,
+        refreshToken: current.refreshToken,
+      ),
+    );
+  }
 
   Future<void> logout() async {
     await _storage.clear();
@@ -104,7 +150,11 @@ final doctorSearchProvider = FutureProvider.autoDispose
     .family<List<Doctor>, DoctorQuery>(
       (ref, q) => ref
           .watch(patientRepositoryProvider)
-          .searchDoctors(query: q.query, specialty: q.specialty, teleconsultation: q.video),
+          .searchDoctors(
+            query: q.query,
+            specialty: q.specialty,
+            teleconsultation: q.video,
+          ),
     );
 
 final doctorProvider = FutureProvider.autoDispose.family<Doctor, String>(

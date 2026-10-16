@@ -28,7 +28,9 @@ class Doctor {
   final String phone;
 
   String get displayName => 'Dr. $firstName $lastName';
-  String get initials => '${firstName[0]}${lastName[0]}'.toUpperCase();
+  String get initials =>
+      '${firstName.isEmpty ? '' : firstName[0]}${lastName.isEmpty ? '' : lastName[0]}'
+          .toUpperCase();
 
   factory Doctor.fromJson(Map<String, dynamic> json) => Doctor(
     id: json['id'] as String,

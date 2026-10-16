@@ -5,12 +5,12 @@
 class AppConfig {
   static const bool useMock = bool.fromEnvironment(
     'USE_MOCK',
-    defaultValue: true,
+    defaultValue: false,
   );
 
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://api.santeclair.example/v1',
+    defaultValue: 'http://127.0.0.1:8000/api',
   );
 
   static const Duration mockLatency = Duration(milliseconds: 450);

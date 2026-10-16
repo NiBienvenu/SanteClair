@@ -93,6 +93,7 @@ class PendingPayment {
     required this.method,
     required this.time,
     this.receiptName,
+    this.receiptUrl,
   });
 
   final String id;
@@ -102,6 +103,7 @@ class PendingPayment {
   final String method;
   final String time;
   final String? receiptName;
+  final String? receiptUrl;
 
   factory PendingPayment.fromJson(Map<String, dynamic> json) => PendingPayment(
     id: json['id'] as String,
@@ -111,6 +113,7 @@ class PendingPayment {
     method: json['method'] as String? ?? '',
     time: json['time'] as String? ?? '',
     receiptName: json['receiptName'] as String?,
+    receiptUrl: json['receiptUrl'] as String?,
   );
 }
 

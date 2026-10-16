@@ -102,6 +102,7 @@ class PatientProfile {
     this.birthDate,
     this.socialSecurityNumber,
     this.emergencyContact,
+    this.bloodGroup,
   });
 
   final String id;
@@ -116,9 +117,12 @@ class PatientProfile {
   final DateTime? birthDate;
   final String? socialSecurityNumber;
   final EmergencyContact? emergencyContact;
+  final String? bloodGroup;
 
   String get fullName => '$firstName $lastName';
-  String get initials => '${firstName[0]}${lastName[0]}'.toUpperCase();
+  String get initials =>
+      '${firstName.isEmpty ? '' : firstName[0]}${lastName.isEmpty ? '' : lastName[0]}'
+          .toUpperCase();
 
   factory PatientProfile.fromJson(Map<String, dynamic> json) => PatientProfile(
     id: json['id'] as String,
@@ -136,6 +140,7 @@ class PatientProfile {
         ? null
         : DateTime.parse(json['birthDate'] as String),
     socialSecurityNumber: json['socialSecurityNumber'] as String?,
+    bloodGroup: json['bloodGroup'] as String?,
     emergencyContact: json['emergencyContact'] == null
         ? null
         : EmergencyContact.fromJson(
@@ -152,6 +157,7 @@ class MedicalDocument {
     required this.date,
     required this.details,
     this.fileName,
+    this.fileUrl,
   });
 
   final String id;
@@ -160,6 +166,7 @@ class MedicalDocument {
   final DateTime date;
   final String details;
   final String? fileName;
+  final String? fileUrl;
 
   factory MedicalDocument.fromJson(Map<String, dynamic> json) =>
       MedicalDocument(
@@ -169,6 +176,7 @@ class MedicalDocument {
         date: DateTime.parse(json['date'] as String),
         details: json['details'] as String? ?? '',
         fileName: json['fileName'] as String?,
+        fileUrl: json['fileUrl'] as String?,
       );
 }
 
@@ -180,6 +188,8 @@ class ConsultationHistory {
     required this.place,
     required this.date,
     required this.status,
+    this.notes = '',
+    this.prescription = const {},
   });
 
   final String id;
@@ -188,6 +198,8 @@ class ConsultationHistory {
   final String place;
   final DateTime date;
   final String status;
+  final String notes;
+  final Map<String, dynamic> prescription;
 
   factory ConsultationHistory.fromJson(Map<String, dynamic> json) =>
       ConsultationHistory(
@@ -197,6 +209,10 @@ class ConsultationHistory {
         place: json['place'] as String? ?? '',
         date: DateTime.parse(json['date'] as String),
         status: json['status'] as String? ?? '',
+        notes: json['notes'] as String? ?? '',
+        prescription: Map<String, dynamic>.from(
+          json['prescription'] as Map? ?? {},
+        ),
       );
 }
 
@@ -211,6 +227,7 @@ class MedicalRecord {
     required this.documents,
     required this.acceptedFormats,
     required this.maxSizeMb,
+    this.dataHosting = '',
   });
 
   final DateTime updatedAt;
@@ -222,6 +239,7 @@ class MedicalRecord {
   final List<MedicalDocument> documents;
   final List<String> acceptedFormats;
   final int maxSizeMb;
+  final String dataHosting;
 
   factory MedicalRecord.fromJson(Map<String, dynamic> json) => MedicalRecord(
     updatedAt: DateTime.parse(json['updatedAt'] as String),
@@ -239,5 +257,6 @@ class MedicalRecord {
         .toList(),
     acceptedFormats: List<String>.from(json['acceptedFormats'] as List? ?? []),
     maxSizeMb: (json['maxSizeMb'] as num?)?.toInt() ?? 25,
+    dataHosting: json['dataHosting'] as String? ?? '',
   );
 }

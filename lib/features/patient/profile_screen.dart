@@ -10,6 +10,7 @@ import '../../core/utils/validators.dart';
 import '../../core/widgets/app_bars.dart';
 import '../../core/widgets/common.dart';
 import '../../data/models/patient.dart';
+import '../../data/models/app_user.dart';
 import '../../data/models/referentials.dart';
 import '../../data/providers.dart';
 import '../shared/logout.dart';
@@ -33,7 +34,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_none),
-            onPressed: () => showAppSnack(context, 'Aucune nouvelle notification.'),
+            onPressed: () =>
+                showAppSnack(context, 'Aucune nouvelle notification.'),
           ),
         ],
       ),
@@ -55,8 +57,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               const SizedBox(height: 12),
               const Center(
                 child: Text(
-                  '${AppConfig.appVersion} • Certifié HDS & RGPD Santé',
-                  style: TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
+                  AppConfig.appVersion,
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ),
             ],
@@ -73,7 +78,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           Row(
             children: [
               const Expanded(
-                child: Text('Informations personnelles', style: TextStyle(fontWeight: FontWeight.w700)),
+                child: Text(
+                  'Informations personnelles',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
               ),
               TextButton.icon(
                 onPressed: () => _edit(p),
@@ -84,8 +92,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
           _InfoTile(
             label: 'Date de naissance',
-            value: p.birthDate == null ? 'Non renseignée' : formatBirthDate(p.birthDate!),
-            trailing: const Icon(Icons.cake_outlined, color: AppColors.textSecondary),
+            value: p.birthDate == null
+                ? 'Non renseignée'
+                : formatBirthDate(p.birthDate!),
+            trailing: const Icon(
+              Icons.cake_outlined,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          _InfoTile(
+            label: 'Groupe sanguin',
+            value: p.bloodGroup ?? 'Non renseigné',
           ),
           _InfoTile(
             label: 'Numéro de sécurité sociale',
@@ -97,7 +114,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             trailing: p.socialSecurityNumber == null
                 ? null
                 : IconButton(
-                    icon: Icon(_showSsn ? Icons.visibility_off_outlined : Icons.visibility_outlined),
+                    icon: Icon(
+                      _showSsn
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                    ),
                     onPressed: () => setState(() => _showSsn = !_showSsn),
                   ),
           ),
@@ -110,7 +131,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ? null
                 : IconButton.filledTonal(
                     icon: const Icon(Icons.phone, size: 18),
-                    onPressed: () => showAppSnack(context, 'Appel de ${p.emergencyContact!.phone}...'),
+                    onPressed: () => showAppSnack(
+                      context,
+                      'Appel de ${p.emergencyContact!.phone}...',
+                    ),
                   ),
           ),
         ],
@@ -135,8 +159,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             title: 'Notifications & Rappels SMS',
             subtitle: s.notificationsSummary,
             badge: s.notificationsEnabled ? 'Actif' : null,
-            onTap: () => _info('Notifications & Rappels SMS',
-                'Vous recevez un rappel SMS 24h et 2h avant chaque consultation, ainsi qu\'une alerte à chaque renouvellement d\'ordonnance.'),
+            onTap: () => _info(
+              'Notifications & Rappels SMS',
+              s.notificationsSummary.isEmpty
+                  ? 'Aucune information renseignée.'
+                  : s.notificationsSummary,
+            ),
           ),
           _MenuTile(
             icon: Icons.lock_outline,
@@ -148,14 +176,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             icon: Icons.privacy_tip_outlined,
             title: 'Confidentialité & Partage médical',
             subtitle: s.sharingSummary,
-            onTap: () => _info('Confidentialité & Partage médical',
-                '${s.sharingSummary}. Vous pouvez révoquer un accès à tout moment.'),
+            onTap: () => _info(
+              'Confidentialité & Partage médical',
+              s.sharingSummary.isEmpty
+                  ? 'Aucune information renseignée.'
+                  : s.sharingSummary,
+            ),
           ),
           _MenuTile(
             icon: Icons.help_outline,
             title: 'Aide & Assistance',
             subtitle: s.helpSummary,
-            onTap: () => _info('Aide & Assistance', 'support@santeclair.example • +257 22 00 00 00'),
+            onTap: () => _info(
+              'Aide & Assistance',
+              s.helpSummary.isEmpty
+                  ? 'Aucune information renseignée.'
+                  : s.helpSummary,
+            ),
           ),
         ],
       ),
@@ -172,7 +209,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            ),
             const SizedBox(height: 10),
             Text(text),
           ],
@@ -195,7 +235,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Moyens de paiement', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                const Text(
+                  'Moyens de paiement',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                ),
                 const SizedBox(height: 8),
                 for (final m in methods)
                   ListTile(
@@ -221,8 +264,26 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
     if (changes == null || !mounted) return;
     try {
-      await ref.read(patientRepositoryProvider).updateProfile(changes);
+      final updated = await ref
+          .read(patientRepositoryProvider)
+          .updateProfile(changes);
+      await ref
+          .read(authControllerProvider.notifier)
+          .updateUser(
+            AppUser(
+              id: updated.id,
+              role: UserRole.patient,
+              firstName: updated.firstName,
+              lastName: updated.lastName,
+              email: updated.email,
+              phone: updated.phone,
+              verified: updated.verified,
+              bloodGroup: updated.bloodGroup,
+            ),
+          );
       ref.invalidate(profileProvider);
+      ref.invalidate(patientHomeProvider);
+      ref.invalidate(medicalRecordProvider);
       if (mounted) showAppSnack(context, 'Informations mises à jour.');
     } on ApiException catch (e) {
       if (mounted) showAppSnack(context, e.message, error: true);
@@ -243,7 +304,10 @@ class _Header extends StatelessWidget {
         children: [
           InitialsAvatar(initials: p.initials, size: 72, verified: p.verified),
           const SizedBox(height: 10),
-          Text(p.fullName, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+          Text(
+            p.fullName,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+          ),
           const SizedBox(height: 4),
           if (p.verified)
             const StatusBadge(
@@ -253,13 +317,31 @@ class _Header extends StatelessWidget {
               background: AppColors.successSoft,
             ),
           const SizedBox(height: 6),
-          Text('${p.email} • ${p.phone}', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+          Text(
+            '${p.email} • ${p.phone}',
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+            ),
+          ),
           const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(child: _MiniCard(icon: Icons.storage_outlined, title: 'Données Santé', value: p.dataHosting)),
+              Expanded(
+                child: _MiniCard(
+                  icon: Icons.storage_outlined,
+                  title: 'Données Santé',
+                  value: p.dataHosting,
+                ),
+              ),
               const SizedBox(width: 8),
-              Expanded(child: _MiniCard(icon: Icons.shield_outlined, title: 'Consentement', value: p.consentStatus)),
+              Expanded(
+                child: _MiniCard(
+                  icon: Icons.shield_outlined,
+                  title: 'Consentement',
+                  value: p.consentStatus,
+                ),
+              ),
             ],
           ),
         ],
@@ -269,7 +351,11 @@ class _Header extends StatelessWidget {
 }
 
 class _MiniCard extends StatelessWidget {
-  const _MiniCard({required this.icon, required this.title, required this.value});
+  const _MiniCard({
+    required this.icon,
+    required this.title,
+    required this.value,
+  });
 
   final IconData icon;
   final String title;
@@ -279,7 +365,10 @@ class _MiniCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(color: AppColors.surfaceSoft, borderRadius: BorderRadius.circular(10)),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceSoft,
+        borderRadius: BorderRadius.circular(10),
+      ),
       child: Row(
         children: [
           Icon(icon, size: 18, color: AppColors.primary),
@@ -288,8 +377,20 @@ class _MiniCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-                Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ],
             ),
           ),
@@ -311,16 +412,28 @@ class _InfoTile extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(top: 8),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(color: AppColors.surfaceSoft, borderRadius: BorderRadius.circular(10)),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceSoft,
+        borderRadius: BorderRadius.circular(10),
+      ),
       child: Row(
         children: [
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary)),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 11.5,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                Text(value, style: const TextStyle(fontWeight: FontWeight.w700)),
+                Text(
+                  value,
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
               ],
             ),
           ),
@@ -352,16 +465,26 @@ class _MenuTile extends StatelessWidget {
       onTap: onTap,
       leading: Container(
         padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(color: AppColors.surfaceTint, borderRadius: BorderRadius.circular(10)),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceTint,
+          borderRadius: BorderRadius.circular(10),
+        ),
         child: Icon(icon, color: AppColors.primary, size: 20),
       ),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+      title: Text(
+        title,
+        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+      ),
       subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (badge != null)
-            StatusBadge(label: badge!, color: AppColors.success, background: AppColors.successSoft),
+            StatusBadge(
+              label: badge!,
+              color: AppColors.success,
+              background: AppColors.successSoft,
+            ),
           const Icon(Icons.chevron_right),
         ],
       ),
@@ -369,27 +492,54 @@ class _MenuTile extends StatelessWidget {
   }
 }
 
-class _EditProfileSheet extends StatefulWidget {
+class _EditProfileSheet extends ConsumerStatefulWidget {
   const _EditProfileSheet({required this.profile});
 
   final PatientProfile profile;
 
   @override
-  State<_EditProfileSheet> createState() => _EditProfileSheetState();
+  ConsumerState<_EditProfileSheet> createState() => _EditProfileSheetState();
 }
 
-class _EditProfileSheetState extends State<_EditProfileSheet> {
+class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
   final _formKey = GlobalKey<FormState>();
+  late final _firstName = TextEditingController(text: widget.profile.firstName);
+  late final _lastName = TextEditingController(text: widget.profile.lastName);
+  late final _ssn = TextEditingController(
+    text: widget.profile.socialSecurityNumber,
+  );
+  late String? _bloodGroup = widget.profile.bloodGroup;
+  late bool _notifications = widget.profile.settings.notificationsEnabled;
+  bool get _hasContact => [
+    _contactName,
+    _contactRelation,
+    _contactPhone,
+  ].any((c) => c.text.trim().isNotEmpty);
   late final _phone = TextEditingController(text: widget.profile.phone);
   late final _email = TextEditingController(text: widget.profile.email);
-  late final _contactName = TextEditingController(text: widget.profile.emergencyContact?.name);
-  late final _contactRelation = TextEditingController(text: widget.profile.emergencyContact?.relation);
-  late final _contactPhone = TextEditingController(text: widget.profile.emergencyContact?.phone);
+  late final _contactName = TextEditingController(
+    text: widget.profile.emergencyContact?.name,
+  );
+  late final _contactRelation = TextEditingController(
+    text: widget.profile.emergencyContact?.relation,
+  );
+  late final _contactPhone = TextEditingController(
+    text: widget.profile.emergencyContact?.phone,
+  );
   late DateTime? _birthDate = widget.profile.birthDate;
 
   @override
   void dispose() {
-    for (final c in [_phone, _email, _contactName, _contactRelation, _contactPhone]) {
+    for (final c in [
+      _firstName,
+      _lastName,
+      _ssn,
+      _phone,
+      _email,
+      _contactName,
+      _contactRelation,
+      _contactPhone,
+    ]) {
       c.dispose();
     }
     super.dispose();
@@ -408,21 +558,33 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
   void _save() {
     if (!_formKey.currentState!.validate()) return;
     Navigator.pop(context, {
+      'firstName': _firstName.text.trim(),
+      'lastName': _lastName.text.trim(),
+      'socialSecurityNumber': _ssn.text.trim(),
+      'bloodGroup': _bloodGroup ?? '',
+      'settings': {'notificationsEnabled': _notifications},
       'phone': _phone.text.trim(),
       'email': _email.text.trim(),
       'birthDate': _birthDate?.toIso8601String().substring(0, 10),
-      'emergencyContact': EmergencyContact(
-        name: _contactName.text.trim(),
-        relation: _contactRelation.text.trim(),
-        phone: _contactPhone.text.trim(),
-      ).toJson(),
+      'emergencyContact': !_hasContact
+          ? null
+          : EmergencyContact(
+              name: _contactName.text.trim(),
+              relation: _contactRelation.text.trim(),
+              phone: _contactPhone.text.trim(),
+            ).toJson(),
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(20, 0, 20, MediaQuery.viewInsetsOf(context).bottom + 24),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        0,
+        20,
+        MediaQuery.viewInsetsOf(context).bottom + 24,
+      ),
       child: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -430,8 +592,23 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text('Modifier mes informations', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+              const Text(
+                'Modifier mes informations',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+              ),
               const SizedBox(height: 16),
+              TextFormField(
+                controller: _firstName,
+                decoration: const InputDecoration(labelText: 'Prénom'),
+                validator: Validators.required,
+              ),
+              const SizedBox(height: 10),
+              TextFormField(
+                controller: _lastName,
+                decoration: const InputDecoration(labelText: 'Nom'),
+                validator: Validators.required,
+              ),
+              const SizedBox(height: 10),
               TextFormField(
                 controller: _phone,
                 decoration: const InputDecoration(labelText: 'Téléphone'),
@@ -445,30 +622,74 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
               ),
               const SizedBox(height: 10),
               OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                ),
                 onPressed: _pickDate,
                 icon: const Icon(Icons.cake_outlined),
-                label: Text(_birthDate == null ? 'Date de naissance' : formatBirthDate(_birthDate!)),
+                label: Text(
+                  _birthDate == null
+                      ? 'Date de naissance'
+                      : formatBirthDate(_birthDate!),
+                ),
               ),
               const SizedBox(height: 16),
-              const Text('Contact d\'urgence', style: TextStyle(fontWeight: FontWeight.w700)),
+              TextFormField(
+                controller: _ssn,
+                decoration: const InputDecoration(
+                  labelText: 'Numéro de sécurité sociale',
+                ),
+              ),
+              const SizedBox(height: 10),
+              DropdownButtonFormField<String>(
+                initialValue: _bloodGroup,
+                decoration: const InputDecoration(labelText: 'Groupe sanguin'),
+                items: [
+                  const DropdownMenuItem<String>(
+                    value: null,
+                    child: Text('Non renseigné'),
+                  ),
+                  for (final group in <String>{
+                    ...?ref.watch(referentialsProvider).value?.bloodGroups,
+                    ?_bloodGroup,
+                  })
+                    DropdownMenuItem(value: group, child: Text(group)),
+                ],
+                onChanged: (value) => setState(() => _bloodGroup = value),
+              ),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Notifications activées'),
+                value: _notifications,
+                onChanged: (value) => setState(() => _notifications = value),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Contact d’urgence (facultatif)',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _contactName,
                 decoration: const InputDecoration(labelText: 'Nom'),
-                validator: Validators.required,
+                validator: (value) =>
+                    _hasContact ? Validators.required(value) : null,
               ),
               const SizedBox(height: 10),
               TextFormField(
                 controller: _contactRelation,
-                decoration: const InputDecoration(labelText: 'Lien (Frère, Mère...)'),
-                validator: Validators.required,
+                decoration: const InputDecoration(
+                  labelText: 'Lien (Frère, Mère...)',
+                ),
+                validator: (value) =>
+                    _hasContact ? Validators.required(value) : null,
               ),
               const SizedBox(height: 10),
               TextFormField(
                 controller: _contactPhone,
                 decoration: const InputDecoration(labelText: 'Téléphone'),
-                validator: Validators.phone,
+                validator: (value) =>
+                    _hasContact ? Validators.phone(value) : null,
               ),
               const SizedBox(height: 18),
               PrimaryButton(label: 'Enregistrer', onPressed: _save),

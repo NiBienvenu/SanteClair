@@ -26,6 +26,7 @@ List<OptionItem> _options(dynamic list) => (list as List? ?? [])
 class Referentials {
   const Referentials({
     required this.specialties,
+    this.specialtyOptions = const [],
     required this.bloodGroups,
     required this.consultationReasons,
     required this.consultationModes,
@@ -35,6 +36,7 @@ class Referentials {
   });
 
   final List<String> specialties;
+  final List<OptionItem> specialtyOptions;
   final List<String> bloodGroups;
   final List<OptionItem> consultationReasons;
   final List<OptionItem> consultationModes;
@@ -44,6 +46,7 @@ class Referentials {
 
   factory Referentials.fromJson(Map<String, dynamic> json) => Referentials(
     specialties: List<String>.from(json['specialties'] as List),
+    specialtyOptions: _options(json['specialtyOptions']),
     bloodGroups: List<String>.from(json['bloodGroups'] as List),
     consultationReasons: _options(json['consultationReasons']),
     consultationModes: _options(json['consultationModes']),

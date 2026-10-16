@@ -1,12 +1,18 @@
 class TimeSlot {
-  const TimeSlot({required this.time, required this.available});
+  const TimeSlot({
+    required this.time,
+    required this.available,
+    this.mode = 'both',
+  });
 
   final String time;
   final bool available;
+  final String mode;
 
   factory TimeSlot.fromJson(Map<String, dynamic> json) => TimeSlot(
     time: json['time'] as String,
     available: json['available'] as bool? ?? true,
+    mode: json['mode'] as String? ?? 'both',
   );
 }
 

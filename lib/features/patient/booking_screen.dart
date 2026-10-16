@@ -16,7 +16,11 @@ import '../../data/providers.dart';
 import '../../router/app_router.dart';
 
 class BookingScreen extends ConsumerStatefulWidget {
-  const BookingScreen({super.key, required this.doctorId, this.rescheduleAppointmentId});
+  const BookingScreen({
+    super.key,
+    required this.doctorId,
+    this.rescheduleAppointmentId,
+  });
 
   final String doctorId;
   final String? rescheduleAppointmentId;
@@ -38,7 +42,9 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
     ref.invalidate(doctorProvider(widget.doctorId));
     ref.invalidate(doctorSlotsProvider(widget.doctorId));
     ref.invalidate(referentialsProvider);
-    if (_isReschedule) ref.invalidate(appointmentProvider(widget.rescheduleAppointmentId!));
+    if (_isReschedule) {
+      ref.invalidate(appointmentProvider(widget.rescheduleAppointmentId!));
+    }
   }
 
   @override
@@ -57,33 +63,108 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: BackAppBar(
-        title: _isReschedule ? 'Modifier le rendez-vous' : 'Réservation Praticien',
+        title: _isReschedule
+            ? 'Modifier le rendez-vous'
+            : 'Réservation Praticien',
         onClose: () => context.go(Routes.patientHome),
+        trailing: IconButton(
+          tooltip: 'Actualiser les disponibilités',
+          onPressed: _retry,
+          icon: const Icon(Icons.refresh),
+        ),
       ),
       body: failed != null
-          ? AsyncValueView<Object?>(value: failed, onRetry: _retry, builder: (_) => const SizedBox())
+          ? AsyncValueView<Object?>(
+              value: failed,
+              onRetry: _retry,
+              builder: (_) => const SizedBox(),
+            )
           : !ready
           ? const Center(child: CircularProgressIndicator())
-          : _buildForm(doctor.requireValue, slots.requireValue, refs.requireValue, existing.value),
+          : _buildForm(
+              doctor.requireValue,
+              slots.requireValue,
+              refs.requireValue,
+              existing.value,
+            ),
     );
   }
 
-  Widget _buildForm(Doctor doctor, DoctorSchedule schedule, Referentials refs, Appointment? existing) {
+  Widget _buildForm(
+    Doctor doctor,
+    DoctorSchedule schedule,
+    Referentials refs,
+    Appointment? existing,
+  ) {
     final reasons = refs.consultationReasons;
-    final reasonId = _reasonId ??
+    final reasonId =
+        _reasonId ??
         reasons.where((r) => r.label == existing?.reason).firstOrNull?.id ??
         reasons.first.id;
+    bool matchesMode(TimeSlot slot, String value) =>
+        (slot.mode == 'both' || slot.mode == value) &&
+        (value != 'video' || doctor.teleconsultation);
+    bool ownSlot(SlotDay day, TimeSlot slot) =>
+        existing != null &&
+        day.date == existing.date.toIso8601String().substring(0, 10) &&
+        slot.time == existing.time;
+    final availableModes = [
+      for (final mode in refs.consultationModes)
+        if (schedule.days.any(
+          (day) => [...day.morning, ...day.afternoon].any(
+            (slot) =>
+                (slot.available || ownSlot(day, slot)) &&
+                matchesMode(slot, mode.id),
+          ),
+        ))
+          mode.id,
+    ];
+    final offeredModes = [
+      for (final mode in refs.consultationModes)
+        if (schedule.days.any(
+          (day) => [
+            ...day.morning,
+            ...day.afternoon,
+          ].any((slot) => matchesMode(slot, mode.id)),
+        ))
+          mode.id,
+    ];
+    final requestedMode = _mode ?? existing?.mode;
+    final mode = requestedMode != null && offeredModes.contains(requestedMode)
+        ? requestedMode
+        : availableModes.firstOrNull ?? offeredModes.firstOrNull ?? 'cabinet';
+    bool eligible(SlotDay day, TimeSlot slot) =>
+        (slot.available || ownSlot(day, slot)) && matchesMode(slot, mode);
+
+    bool eligibleDay(SlotDay day) =>
+        [...day.morning, ...day.afternoon].any((s) => eligible(day, s));
     final existingDay = schedule.days.indexWhere(
-      (d) => existing != null && d.date == existing.date.toIso8601String().substring(0, 10),
+      (d) =>
+          existing != null &&
+          d.date == existing.date.toIso8601String().substring(0, 10) &&
+          eligibleDay(d),
     );
-    final dayIndex = _dayIndex ??
-        (existingDay >= 0 ? existingDay : schedule.days.indexWhere((d) => d.hasAvailability));
+    final suggestedDay = existingDay >= 0
+        ? existingDay
+        : schedule.days.indexWhere(eligibleDay);
+    final requestedDay = _dayIndex;
+    final dayIndex =
+        requestedDay != null &&
+            requestedDay < schedule.days.length &&
+            eligibleDay(schedule.days[requestedDay])
+        ? requestedDay
+        : suggestedDay;
     final day = dayIndex >= 0 ? schedule.days[dayIndex] : null;
-    final firstFree = day == null
-        ? null
-        : [...day.morning, ...day.afternoon].where((s) => s.available).firstOrNull?.time;
-    final time = _time ?? (_dayIndex == null ? existing?.time : null) ?? firstFree;
-    final mode = _mode ?? existing?.mode ?? 'cabinet';
+    final validSlots = day == null
+        ? <TimeSlot>[]
+        : [
+            ...day.morning,
+            ...day.afternoon,
+          ].where((s) => eligible(day, s)).toList();
+    final requestedTime = _time ?? (_dayIndex == null ? existing?.time : null);
+    final time = validSlots.any((s) => s.time == requestedTime)
+        ? requestedTime
+        : validSlots.firstOrNull?.time;
     final reason = reasons.firstWhere((r) => r.id == reasonId);
 
     return Column(
@@ -97,7 +178,13 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
               const NumberedSection(
                 number: 1,
                 title: 'Motif',
-                trailing: Text('Obligatoire', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                trailing: Text(
+                  'Obligatoire',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
               ),
               GridView.count(
                 crossAxisCount: 2,
@@ -115,11 +202,17 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                         children: [
                           Icon(
                             iconFor(r.icon),
-                            color: r.id == 'emergency' && r.id != reasonId ? AppColors.danger : null,
+                            color: r.id == 'emergency' && r.id != reasonId
+                                ? AppColors.danger
+                                : null,
                           ),
                           const SizedBox(width: 8),
                           Expanded(
-                            child: Text(r.label, style: const TextStyle(fontSize: 12.5), maxLines: 2),
+                            child: Text(
+                              r.label,
+                              style: const TextStyle(fontSize: 12.5),
+                              maxLines: 2,
+                            ),
                           ),
                         ],
                       ),
@@ -130,44 +223,79 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
               NumberedSection(
                 number: 2,
                 title: 'Choisir le jour',
-                trailing: Text(schedule.monthLabel,
-                    style: const TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w600)),
+                trailing: Text(
+                  schedule.monthLabel,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
-              Row(
-                children: [
-                  for (var i = 0; i < schedule.days.length; i++)
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 3),
-                        child: SelectTile(
-                          selected: i == dayIndex,
-                          enabled: schedule.days[i].hasAvailability,
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          onTap: () => setState(() {
-                            _dayIndex = i;
-                            _time = null;
-                          }),
-                          child: Column(
-                            children: [
-                              Text(schedule.days[i].weekday,
-                                  style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w500)),
-                              const SizedBox(height: 2),
-                              Text('${schedule.days[i].day}',
-                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-                            ],
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    for (var i = 0; i < schedule.days.length; i++)
+                      SizedBox(
+                        width: 68,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 3),
+                          child: SelectTile(
+                            selected: i == dayIndex,
+                            enabled: eligibleDay(schedule.days[i]),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            onTap: () => setState(() {
+                              _dayIndex = i;
+                              _time = null;
+                            }),
+                            child: Column(
+                              children: [
+                                Text(
+                                  schedule.days[i].weekday,
+                                  style: const TextStyle(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '${schedule.days[i].day}',
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
               const SizedBox(height: 14),
               const NumberedSection(number: 3, title: 'Choisir l\'heure'),
+              if (day == null)
+                InfoBanner(
+                  icon: Icons.event_busy_outlined,
+                  text: offeredModes.isEmpty
+                      ? 'Aucun créneau n’est encore proposé par ce médecin. Actualisez les disponibilités ou choisissez un autre praticien.'
+                      : 'Aucun horaire disponible ${mode == 'video' ? 'en vidéo' : 'au cabinet'} sur les prochains jours. Essayez un autre mode ou actualisez les disponibilités.',
+                ),
               if (day != null) ...[
                 _SlotRow(
                   label: 'MATIN',
                   icon: Icons.wb_sunny_outlined,
-                  slots: day.morning,
+                  slots: day.morning
+                      .map(
+                        (s) => TimeSlot(
+                          time: s.time,
+                          available: eligible(day, s),
+                          mode: s.mode,
+                        ),
+                      )
+                      .toList(),
                   selected: time,
                   onSelect: (t) => setState(() => _time = t),
                 ),
@@ -175,7 +303,15 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                 _SlotRow(
                   label: 'APRÈS-MIDI',
                   icon: Icons.wb_twilight_outlined,
-                  slots: day.afternoon,
+                  slots: day.afternoon
+                      .map(
+                        (s) => TimeSlot(
+                          time: s.time,
+                          available: eligible(day, s),
+                          mode: s.mode,
+                        ),
+                      )
+                      .toList(),
                   selected: time,
                   onSelect: (t) => setState(() => _time = t),
                 ),
@@ -190,17 +326,26 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 4),
                         child: SelectTile(
                           selected: m.id == mode,
-                          enabled: m.id != 'video' || doctor.teleconsultation,
+                          enabled: offeredModes.contains(m.id),
                           padding: const EdgeInsets.all(12),
-                          onTap: () => setState(() => _mode = m.id),
+                          onTap: () => setState(() {
+                            _mode = m.id;
+                            _time = null;
+                            _dayIndex = null;
+                          }),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Icon(iconFor(m.icon)),
                               const SizedBox(height: 8),
                               Text(m.label),
-                              Text(m.subtitle ?? '',
-                                  style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w400)),
+                              Text(
+                                m.subtitle ?? '',
+                                style: const TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -211,7 +356,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
               const SizedBox(height: 16),
               const InfoBanner(
                 icon: Icons.shield_outlined,
-                text: 'Données certifiées HDS • Annulation gratuite jusqu\'à 2h avant',
+                text: 'Votre paiement sera vérifié avant confirmation du rendez-vous.',
               ),
             ],
           ),
@@ -228,13 +373,15 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
               loading: _submitting,
               onPressed: day == null || time == null
                   ? null
-                  : () => _submit(AppointmentRequest(
+                  : () => _submit(
+                      AppointmentRequest(
                         doctorId: doctor.id,
                         reason: reason.label,
                         date: day.date,
                         time: time,
                         mode: mode,
-                      )),
+                      ),
+                    ),
             ),
           ),
         ),
@@ -247,7 +394,10 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
     final repo = ref.read(patientRepositoryProvider);
     try {
       if (_isReschedule) {
-        await repo.rescheduleAppointment(widget.rescheduleAppointmentId!, request);
+        await repo.rescheduleAppointment(
+          widget.rescheduleAppointmentId!,
+          request,
+        );
         ref
           ..invalidate(patientHomeProvider)
           ..invalidate(appointmentsProvider);
@@ -288,8 +438,14 @@ class _DoctorHeader extends StatelessWidget {
           Container(
             width: 48,
             height: 48,
-            decoration: BoxDecoration(color: AppColors.surfaceTint, borderRadius: BorderRadius.circular(12)),
-            child: const Icon(Icons.medical_services_outlined, color: AppColors.primary),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceTint,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.medical_services_outlined,
+              color: AppColors.primary,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -299,16 +455,28 @@ class _DoctorHeader extends StatelessWidget {
                 Row(
                   children: [
                     Flexible(
-                      child: Text(doctor.displayName,
-                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+                      child: Text(
+                        doctor.displayName,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 16,
+                        ),
+                      ),
                     ),
                     if (doctor.verified) ...[
                       const SizedBox(width: 4),
-                      const Icon(Icons.verified, size: 16, color: AppColors.success),
+                      const Icon(
+                        Icons.verified,
+                        size: 16,
+                        color: AppColors.success,
+                      ),
                     ],
                   ],
                 ),
-                Text(doctor.specialty, style: const TextStyle(color: AppColors.textSecondary)),
+                Text(
+                  doctor.specialty,
+                  style: const TextStyle(color: AppColors.textSecondary),
+                ),
                 const SizedBox(height: 4),
                 StatusBadge(
                   label: 'Tarif : ${formatMoney(doctor.fee, doctor.currency)}',
@@ -349,15 +517,24 @@ class _SlotRow extends StatelessWidget {
           children: [
             Icon(icon, size: 14, color: AppColors.textSecondary),
             const SizedBox(width: 4),
-            Text(label,
-                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textSecondary)),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textSecondary,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 6),
-        Row(
+        Wrap(
+          spacing: 6,
+          runSpacing: 8,
           children: [
             for (final s in slots)
-              Expanded(
+              SizedBox(
+                width: 76,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 3),
                   child: SelectTile(

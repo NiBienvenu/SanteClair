@@ -38,7 +38,9 @@ class _DoctorSearchScreenState extends ConsumerState<DoctorSearchScreen> {
     'pediatre': 'Pédiatre',
   };
 
-  late final TextEditingController _controller = TextEditingController(text: widget.initialQuery);
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.initialQuery,
+  );
   late String _query = widget.initialQuery;
   late String? _specialty = widget.specialty;
   late bool _video = widget.video;
@@ -53,13 +55,27 @@ class _DoctorSearchScreenState extends ConsumerState<DoctorSearchScreen> {
 
   void _onChanged(String value) {
     _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 350), () => setState(() => _query = value.trim()));
+    _debounce = Timer(
+      const Duration(milliseconds: 350),
+      () => setState(() => _query = value.trim()),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final DoctorQuery query = (query: _query, specialty: _specialty, video: _video);
+    final DoctorQuery query = (
+      query: _query,
+      specialty: _specialty,
+      video: _video,
+    );
     final results = ref.watch(doctorSearchProvider(query));
+    final specialties = ref.watch(referentialsProvider).value?.specialtyOptions;
+    final filters = specialties == null || specialties.isEmpty
+        ? _filters
+        : <String?, String>{
+            null: 'Tous',
+            for (final item in specialties) item.id: item.label,
+          };
     return Scaffold(
       appBar: const BackAppBar(title: 'Trouver un praticien'),
       body: Column(
@@ -68,7 +84,10 @@ class _DoctorSearchScreenState extends ConsumerState<DoctorSearchScreen> {
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: TextField(
               controller: _controller,
-              autofocus: widget.initialQuery.isEmpty && widget.specialty == null && !widget.video,
+              autofocus:
+                  widget.initialQuery.isEmpty &&
+                  widget.specialty == null &&
+                  !widget.video,
               onChanged: _onChanged,
               decoration: const InputDecoration(
                 hintText: 'Médecin, spécialité, ville...',
@@ -91,7 +110,7 @@ class _DoctorSearchScreenState extends ConsumerState<DoctorSearchScreen> {
                     onSelected: (v) => setState(() => _video = v),
                   ),
                 ),
-                for (final entry in _filters.entries)
+                for (final entry in filters.entries)
                   Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: ChoiceChip(
@@ -109,8 +128,10 @@ class _DoctorSearchScreenState extends ConsumerState<DoctorSearchScreen> {
               onRetry: () => ref.invalidate(doctorSearchProvider(query)),
               builder: (doctors) => doctors.isEmpty
                   ? const Center(
-                      child: Text('Aucun praticien ne correspond à votre recherche.',
-                          style: TextStyle(color: AppColors.textSecondary)),
+                      child: Text(
+                        'Aucun praticien ne correspond à votre recherche.',
+                        style: TextStyle(color: AppColors.textSecondary),
+                      ),
                     )
                   : ListView.separated(
                       padding: const EdgeInsets.all(16),
@@ -123,9 +144,13 @@ class _DoctorSearchScreenState extends ConsumerState<DoctorSearchScreen> {
                           style: FilledButton.styleFrom(
                             minimumSize: const Size(0, 34),
                             padding: const EdgeInsets.symmetric(horizontal: 12),
-                            textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                            textStyle: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                          onPressed: () => context.push(Routes.booking(doctors[i].id)),
+                          onPressed: () =>
+                              context.push(Routes.booking(doctors[i].id)),
                           child: const Text('Prendre RDV'),
                         ),
                       ),

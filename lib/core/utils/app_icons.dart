@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 /// Associe les clés d'icône envoyées par l'API aux icônes Material.
 IconData iconFor(String? key) => switch (key) {
+  'heart' => Icons.favorite_border,
   'stethoscope' => Icons.medical_services_outlined,
   'tooth' => Icons.sentiment_satisfied_alt_outlined,
   'child' => Icons.child_care_outlined,

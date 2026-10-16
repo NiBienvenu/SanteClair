@@ -23,13 +23,17 @@ void main() {
 
     setUp(() {
       token = null;
-      api = ApiClient(tokenProvider: () => token);
+      api = ApiClient(tokenProvider: () => token, useMock: true);
     });
 
     test('login rejects bad credentials and accepts demo account', () async {
       final auth = AuthRepository(api);
       await expectLater(
-        auth.login(identifier: 'amina.kone@email.com', password: 'wrong', role: UserRole.patient),
+        auth.login(
+          identifier: 'amina.kone@email.com',
+          password: 'wrong',
+          role: UserRole.patient,
+        ),
         throwsA(isA<ApiException>().having((e) => e.statusCode, 'status', 401)),
       );
       final session = await auth.login(
@@ -80,7 +84,10 @@ void main() {
       expect(paid.status, AppointmentStatus.paymentSubmitted);
 
       final dashboard = await DoctorRepository(api).dashboard();
-      expect(dashboard.pendingPayments.map((p) => p.patientName), contains('Amina Koné'));
+      expect(
+        dashboard.pendingPayments.map((p) => p.patientName),
+        contains('Amina Koné'),
+      );
       expect(dashboard.stats.today, 8);
       expect(dashboard.stats.toConfirm, 2);
     });
