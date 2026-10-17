@@ -1,3 +1,5 @@
+import '../video/teleconsultation_sheet.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -319,6 +321,15 @@ class _NextAppointmentCard extends StatelessWidget {
   }
 
   void _showDirections(BuildContext context, Appointment a) {
+    if (a.isVideo) {
+      showTeleconsultation(
+        context,
+        a.id,
+        phone: a.doctor.phone,
+        joinWhenAvailable: true,
+      );
+      return;
+    }
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,

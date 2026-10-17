@@ -313,6 +313,15 @@ class _DoctorDashboardScreenState extends ConsumerState<DoctorDashboardScreen> {
               ],
             ],
           ),
+          if (item.mode == 'video' && item.status == 'confirmed') ...[
+            const SizedBox(height: 8),
+            FilledButton.icon(
+              onPressed: () =>
+                  context.push(Routes.videoCall(item.id, doctor: true)),
+              icon: const Icon(Icons.videocam),
+              label: const Text('Rejoindre'),
+            ),
+          ],
           if (item.status == 'pending') ...[
             const SizedBox(height: 10),
             Row(

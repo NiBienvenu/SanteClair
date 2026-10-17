@@ -17,7 +17,11 @@ class BrandLogo extends StatelessWidget {
         color: AppColors.primary,
         borderRadius: BorderRadius.circular(size * 0.28),
       ),
-      child: Icon(Icons.health_and_safety_outlined, color: Colors.white, size: size * 0.6),
+      child: Icon(
+        Icons.health_and_safety_outlined,
+        color: Colors.white,
+        size: size * 0.6,
+      ),
     );
   }
 }
@@ -47,15 +51,31 @@ class BrandAppBar extends StatelessWidget implements PreferredSizeWidget {
         children: [
           const BrandLogo(),
           const SizedBox(width: 10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'SantéClair',
-                style: TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.w700),
-              ),
-              Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'SantéClair',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -79,7 +99,12 @@ class BrandAppBar extends StatelessWidget implements PreferredSizeWidget {
 
 /// Barre des écrans secondaires : flèche retour, titre, avatar.
 class BackAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const BackAppBar({super.key, required this.title, this.onClose, this.trailing});
+  const BackAppBar({
+    super.key,
+    required this.title,
+    this.onClose,
+    this.trailing,
+  });
 
   final String title;
   final VoidCallback? onClose;
@@ -97,7 +122,8 @@ class BackAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       title: Text(title),
       actions: [
-        if (onClose != null) IconButton(icon: const Icon(Icons.close), onPressed: onClose),
+        if (onClose != null)
+          IconButton(icon: const Icon(Icons.close), onPressed: onClose),
         trailing ??
             const Padding(
               padding: EdgeInsets.only(right: 12),

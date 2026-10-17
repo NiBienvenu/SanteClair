@@ -6,6 +6,7 @@ import '../core/widgets/app_shell.dart';
 import '../data/models/app_user.dart';
 import '../data/providers.dart';
 import '../features/auth/login_screen.dart';
+import '../features/video/video_call_screen.dart';
 import '../features/auth/register_doctor_screen.dart';
 import '../features/auth/register_patient_screen.dart';
 import '../features/auth/splash_screen.dart';
@@ -35,7 +36,15 @@ class Routes {
   static const doctorSearch = '/patient/search';
   static String booking(String doctorId, {String? reschedule}) =>
       '/patient/booking/$doctorId${reschedule == null ? '' : '?reschedule=$reschedule'}';
-  static String payment(String appointmentId) => '/patient/payment/$appointmentId';
+  static String payment(String appointmentId) =>
+      '/patient/payment/$appointmentId';
+
+  static String videoCall(
+    String appointmentId, {
+    bool urgent = false,
+    bool doctor = false,
+  }) =>
+      '/${doctor ? 'doctor' : 'patient'}/video/$appointmentId${urgent ? '?urgent=true' : ''}';
 
   static const doctorHome = '/doctor';
   static const doctorAppointments = '/doctor/appointments';
@@ -55,7 +64,8 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final auth = ref.read(authControllerProvider);
       final location = state.matchedLocation;
-      final onAuthPage = location == Routes.login || location.startsWith('/register');
+      final onAuthPage =
+          location == Routes.login || location.startsWith('/register');
 
       if (auth.status == AuthStatus.unknown) {
         return location == Routes.splash ? null : Routes.splash;
@@ -63,15 +73,33 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (auth.status == AuthStatus.unauthenticated) {
         return onAuthPage ? null : Routes.login;
       }
-      final home = auth.user!.role == UserRole.doctor ? Routes.doctorHome : Routes.patientHome;
-      if (onAuthPage || location == Routes.splash || !location.startsWith(home)) return home;
+      final home = auth.user!.role == UserRole.doctor
+          ? Routes.doctorHome
+          : Routes.patientHome;
+      if (onAuthPage || location == Routes.splash || !location.startsWith(home)) {
+        return home;
+      }
       return null;
     },
     routes: [
+      for (final role in ['patient', 'doctor'])
+        GoRoute(
+          path: '/$role/video/:appointmentId',
+          builder: (_, state) => VideoCallScreen(
+            appointmentId: state.pathParameters['appointmentId']!,
+            urgent: state.uri.queryParameters['urgent'] == 'true',
+          ),
+        ),
       GoRoute(path: Routes.splash, builder: (_, _) => const SplashScreen()),
       GoRoute(path: Routes.login, builder: (_, _) => const LoginScreen()),
-      GoRoute(path: Routes.registerPatient, builder: (_, _) => const RegisterPatientScreen()),
-      GoRoute(path: Routes.registerDoctor, builder: (_, _) => const RegisterDoctorScreen()),
+      GoRoute(
+        path: Routes.registerPatient,
+        builder: (_, _) => const RegisterPatientScreen(),
+      ),
+      GoRoute(
+        path: Routes.registerDoctor,
+        builder: (_, _) => const RegisterDoctorScreen(),
+      ),
 
       StatefulShellRoute.indexedStack(
         builder: (_, _, shell) => AppShell(shell: shell),
@@ -99,8 +127,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/patient/payment/:appointmentId',
-        builder: (_, state) =>
-            PaymentScreen(appointmentId: state.pathParameters['appointmentId']!),
+        builder: (_, state) => PaymentScreen(
+          appointmentId: state.pathParameters['appointmentId']!,
+        ),
       ),
 
       StatefulShellRoute.indexedStack(

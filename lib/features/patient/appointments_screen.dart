@@ -1,3 +1,5 @@
+import '../video/teleconsultation_sheet.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -61,19 +63,29 @@ class _AppointmentCard extends ConsumerWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Annuler le rendez-vous ?'),
-        content: Text('${appointment.doctor.displayName} • ${formatDayLong(appointment.date)} à ${appointment.time}'),
+        content: Text(
+          '${appointment.doctor.displayName} • ${formatDayLong(appointment.date)} à ${appointment.time}',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Non')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Non'),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Oui, annuler', style: TextStyle(color: AppColors.danger)),
+            child: const Text(
+              'Oui, annuler',
+              style: TextStyle(color: AppColors.danger),
+            ),
           ),
         ],
       ),
     );
     if (confirmed != true) return;
     try {
-      await ref.read(patientRepositoryProvider).cancelAppointment(appointment.id);
+      await ref
+          .read(patientRepositoryProvider)
+          .cancelAppointment(appointment.id);
       ref
         ..invalidate(appointmentsProvider)
         ..invalidate(patientHomeProvider);
@@ -86,7 +98,9 @@ class _AppointmentCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final a = appointment;
-    final active = a.status != AppointmentStatus.cancelled && a.status != AppointmentStatus.completed;
+    final active =
+        a.status != AppointmentStatus.cancelled &&
+        a.status != AppointmentStatus.completed;
     return SectionCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -99,8 +113,17 @@ class _AppointmentCard extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(a.doctor.displayName, style: const TextStyle(fontWeight: FontWeight.w700)),
-                    Text(a.reason, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                    Text(
+                      a.doctor.displayName,
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    Text(
+                      a.reason,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -110,21 +133,51 @@ class _AppointmentCard extends ConsumerWidget {
           const SizedBox(height: 10),
           Row(
             children: [
-              const Icon(Icons.event_outlined, size: 16, color: AppColors.primary),
+              const Icon(
+                Icons.event_outlined,
+                size: 16,
+                color: AppColors.primary,
+              ),
               const SizedBox(width: 6),
-              Text('${formatDayLong(a.date)} • ${a.time}', style: const TextStyle(fontWeight: FontWeight.w600)),
+              Text(
+                '${formatDayLong(a.date)} • ${a.time}',
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
             ],
           ),
           const SizedBox(height: 4),
           Row(
             children: [
-              Icon(a.isVideo ? Icons.videocam_outlined : Icons.location_on_outlined,
-                  size: 16, color: AppColors.primary),
+              Icon(
+                a.isVideo
+                    ? Icons.videocam_outlined
+                    : Icons.location_on_outlined,
+                size: 16,
+                color: AppColors.primary,
+              ),
               const SizedBox(width: 6),
-              Expanded(child: Text(a.location, overflow: TextOverflow.ellipsis)),
-              Text(formatMoney(a.amount, a.currency), style: const TextStyle(fontWeight: FontWeight.w700)),
+              Expanded(
+                child: Text(a.location, overflow: TextOverflow.ellipsis),
+              ),
+              Text(
+                formatMoney(a.amount, a.currency),
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
             ],
           ),
+          if (active && a.isVideo) ...[
+            const SizedBox(height: 10),
+            FilledButton.icon(
+              onPressed: () => showTeleconsultation(
+                context,
+                a.id,
+                phone: a.doctor.phone,
+                joinWhenAvailable: true,
+              ),
+              icon: const Icon(Icons.videocam),
+              label: const Text('Rejoindre'),
+            ),
+          ],
           if (active) ...[
             const SizedBox(height: 10),
             Row(
@@ -132,7 +185,9 @@ class _AppointmentCard extends ConsumerWidget {
                 if (a.status == AppointmentStatus.pendingPayment)
                   Expanded(
                     child: FilledButton(
-                      style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(38)),
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(38),
+                      ),
                       onPressed: () => context.push(Routes.payment(a.id)),
                       child: const Text('Payer'),
                     ),
@@ -140,14 +195,18 @@ class _AppointmentCard extends ConsumerWidget {
                 else
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: () => context.push(Routes.booking(a.doctor.id, reschedule: a.id)),
+                      onPressed: () => context.push(
+                        Routes.booking(a.doctor.id, reschedule: a.id),
+                      ),
                       child: const Text('Modifier'),
                     ),
                   ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(foregroundColor: AppColors.danger),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.danger,
+                    ),
                     onPressed: () => _cancel(context, ref),
                     child: const Text('Annuler'),
                   ),

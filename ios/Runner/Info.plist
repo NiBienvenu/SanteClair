@@ -2,6 +2,14 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+    <key>NSCameraUsageDescription</key>
+    <string>SantéClair utilise la caméra pour votre téléconsultation avec le médecin.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>SantéClair utilise le microphone pour parler pendant la téléconsultation.</string>
+    <key>NSLocalNetworkUsageDescription</key>
+    <string>SantéClair se connecte au serveur du cabinet sur votre réseau local.</string>
+    <key>NSAppTransportSecurity</key>
+    <dict><key>NSAllowsLocalNetworking</key><true/></dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
