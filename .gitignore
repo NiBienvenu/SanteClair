@@ -48,4 +48,4 @@ app.*.map.json
 .widget_preview/
 
 # Local ZEGOCLOUD development credentials
-/config/zego.local.json
+# /config/zego.local.json
